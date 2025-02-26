@@ -1,46 +1,46 @@
 ﻿using DAL.Interfaces;
 using DAL.Models;
-using System;
-using System.Collections.Generic;
-using System.Data.Entity;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace DAL.Repositories
 {
     public class UsersRepository : IUsersRepository
     {
-        private ApplicationContext applicationContext;
+        private readonly ApplicationContext _applicationContext;
 
         public UsersRepository(ApplicationContext applicationContext)
         {
-            this.applicationContext = applicationContext;
+            _applicationContext = applicationContext;
         }
 
         public void Add(Users entity)
         {
-            throw new NotImplementedException();
+            _applicationContext.Users.Add(entity);
+            _applicationContext.SaveChanges();
         }
 
         public void Delete(Users entity)
         {
-            throw new NotImplementedException();
+            _applicationContext.Users.Remove(entity);
+            _applicationContext.SaveChanges();
         }
 
         public Users Get(int id)
         {
-            throw new NotImplementedException();
+            return _applicationContext.Users
+                .AsNoTracking()
+                .FirstOrDefault(u => u.Id == id);
         }
 
         public IEnumerable<Users> GetAll()
         {
-            return applicationContext.Users.AsNoTracking().ToList();
+            return _applicationContext.Users.AsNoTracking().ToList();
         }
 
         public void Update(Users entity)
         {
-            throw new NotImplementedException();
+            _applicationContext.Users.Update(entity);
+            _applicationContext.SaveChanges();
         }
     }
 }
