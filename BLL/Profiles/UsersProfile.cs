@@ -8,7 +8,8 @@ namespace BLL.Profiles
     {
         public UsersProfile()
         {
-            CreateMap<Users, UsersDTO>().ReverseMap();
+            CreateMap<RegisterDTO, Users>()
+                .ForMember(dest => dest.PasswordHash, opt => opt.MapFrom(src => src.Password));
         }
     }
 }

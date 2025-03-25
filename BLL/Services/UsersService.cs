@@ -16,38 +16,39 @@ namespace BLL.Services
             this.usersRepository = usersRepository;
             this.mapper = mapper;
         }
-        public void Add(UsersDTO item)
+        public void Add(RegisterDTO item)
         {
             Users user = mapper.Map<Users>(item);
-            usersRepository.Add(user);
+            usersRepository.AddAsync(user);
         }
-        public void Delete(UsersDTO item)
+        public void Delete(RegisterDTO item)
         {
             Users user = mapper.Map<Users>(item);
-            usersRepository.Delete(user);
+            usersRepository.DeleteAsync(user);
         }
-        public void DeleteById(int id)
+        public async void DeleteById(string id)
         {
-            Users user = usersRepository.Get(id);
+            Users user = await usersRepository.GetAsync(id);
             if (user != null)
             {
-                usersRepository.Delete(user);
+                await usersRepository.DeleteAsync(user);
             }
         }
-        public UsersDTO FindById(int id)
+        public async Task<RegisterDTO> FindByIdAsync(string id)
         {
-            Users user = usersRepository.Get(id);
-            return mapper.Map<UsersDTO>(user);
+            Users user = await usersRepository.GetAsync(id);
+            return mapper.Map<RegisterDTO>(user);
         }
-        public List<UsersDTO> GetAll()
+
+        public List<RegisterDTO> GetAll()
         {
-            var users = usersRepository.GetAll();
-            return mapper.Map<List<UsersDTO>>(users);
+            var users = usersRepository.GetAllAsync();
+            return mapper.Map<List<RegisterDTO>>(users);
         }
-        public void Update(UsersDTO item)
+        public void Update(RegisterDTO item)
         {
-            Users user = mapper.Map<Users>(item);
-            usersRepository.Update(user);
+            Users user = mapper.Map<Users>(item);   
+            usersRepository.UpdateAsync(user);
         }
     }
 }

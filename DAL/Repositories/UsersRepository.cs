@@ -1,5 +1,6 @@
 ﻿using DAL.Interfaces;
 using DAL.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace DAL.Repositories
@@ -7,40 +8,70 @@ namespace DAL.Repositories
     public class UsersRepository : IUsersRepository
     {
         private readonly ApplicationContext _applicationContext;
+        private readonly UserManager<Users> userManager;
+        private readonly SignInManager<Users> signInManager;
 
-        public UsersRepository(ApplicationContext applicationContext)
+        public UsersRepository(ApplicationContext applicationContext, UserManager<Users> userManager, SignInManager<Users> signInManager)
         {
             _applicationContext = applicationContext;
+            this.userManager = userManager;
+            this.signInManager = signInManager;
         }
 
-        public void Add(Users entity)
+        public async Task AddAsync(Users entity)
         {
-            _applicationContext.Users.Add(entity);
-            _applicationContext.SaveChanges();
+            entity.UserName = entity.Email;
+
+            await userManager.CreateAsync(entity,entity.PasswordHash!);
+            await userManager.AddToRoleAsync(entity, "учащийся");
         }
 
-        public void Delete(Users entity)
+        public async Task<Users> LoginAsync(string email, string password)
+        {
+            var User = await userManager.FindByEmailAsync(email);
+            var result =  await signInManager.CheckPasswordSignInAsync(User, password, false);
+            if(!result.Succeeded)
+            {
+                throw new Exception("Пользователя с таким login-ом и паролем не существует");
+            }
+            return User;
+        }
+
+        public async Task DeleteAsync(Users entity)
         {
             _applicationContext.Users.Remove(entity);
-            _applicationContext.SaveChanges();
+            await _applicationContext.SaveChangesAsync();
         }
 
-        public Users Get(int id)
+        public async Task<Users> GetAsync(string id)
         {
-            return _applicationContext.Users
+            return await _applicationContext.Users
                 .AsNoTracking()
-                .FirstOrDefault(u => u.Id == id);
+                .FirstOrDefaultAsync(u => u.Id == id);
         }
 
-        public IEnumerable<Users> GetAll()
+        public async Task<IEnumerable<Users>> GetAllAsync()
         {
-            return _applicationContext.Users.AsNoTracking().ToList();
+            return await _applicationContext.Users
+                .AsNoTracking()
+                .ToListAsync();
         }
 
-        public void Update(Users entity)
+        public Task UpdateAsync(Users entity)
         {
             _applicationContext.Users.Update(entity);
-            _applicationContext.SaveChanges();
+            return _applicationContext.SaveChangesAsync();
+        }
+
+        public async Task LogoutAsync()
+        {
+            await signInManager.SignOutAsync();
+        }
+
+
+        public async Task<List<string>> GetRolesAsync(Users user)
+        {
+            return (List<string>)await userManager.GetRolesAsync(user);
         }
     }
 }
